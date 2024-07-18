@@ -103,10 +103,6 @@ if page == "Análise de Vendas":
     
     dias_desejados = st.multiselect("Selecione os dias desejados:", list(range(1, 32)))
     
-    if page == "Análise de Vendas":
-    st.title("Análise de Vendas")
-    
-    
     
     # Seleção de datas
     data_default = df_dnd.index.max().date()

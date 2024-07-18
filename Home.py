@@ -103,56 +103,98 @@ if page == "Análise de Vendas":
     
     dias_desejados = st.multiselect("Selecione os dias desejados:", list(range(1, 32)))
     
-    if dias_desejados:
-        filtered_df = total_vendas_e_quantidade[total_vendas_e_quantidade['dia'].isin(dias_desejados)].sort_values(by='total_receb', ascending=False)
-        filtered_df['tipo'] = filtered_df['tipo'].str.strip()
+    if page == "Análise de Vendas":
+    st.title("Análise de Vendas")
+    
+    
+    
+    # Seleção de datas
+    data_default = df_dnd.index.max().date()
+    data_inicio = st.sidebar.date_input('Data Inicial', data_default - timedelta(days=6))
+    data_final = st.sidebar.date_input('Data Final', data_default)
 
-        st.write("### Dados Filtrados")
-        #dataframe geral do dia
-        #st.dataframe(filtered_df)
-
-        dados_PR = filtered_df[filtered_df['tipo'] == 'PR'][['vendedor', 'total_receb', 'quantidade', 'tkm', 'performance']].round(2)
-        dados_ON = filtered_df[filtered_df['tipo'] == 'ON'][['vendedor', 'total_receb', 'quantidade', 'tkm', 'performance']].round(2)
-
-        total_vendas_DIA= filtered_df['total_receb'].sum()
-        total_vendas_ON = dados_ON['total_receb'].sum()
-        total_vendas_PR = dados_PR['total_receb'].sum()
-        qtd_vendas_dia = filtered_df ['total_receb'].count()
-
-        # adicionado kpi 
-        col1, col2,col3 = st.columns(3)
-        valor_vendas = f"R$ {total_vendas_DIA: ,.2f}"
-        #dif_metrica = total_vendas_ON / total_vendas_DIA *100
-        col1.metric('Valor de total',
-        (valor_vendas))
-
-        dif_metrica3 = f"R$ {qtd_vendas_dia : ,.2f}"
-        #dif_metrica = total_vendas_ON / total_vendas_DIA *100
-        col1.metric('Valor de total',
-        (dif_metrica3))
-
-
-
-        valor_vendas2 = f"R$ {total_vendas_PR : ,.2f}"
-        dif_metrica2 = f"  {total_vendas_PR  / total_vendas_DIA *100: .2f} % "
-        col2.metric('Valor presencial',
-        valor_vendas2,
-        (dif_metrica2))
-
-        valor_vendas3 = f"R$ {total_vendas_ON : ,.2f}"
-        dif_metrica3 = f"{total_vendas_ON / total_vendas_DIA *100: .2f} % "
+    # Filtrar o DataFrame com base nas datas selecionadas
+    df_vendas_cortado = df_dnd[(df_dnd.index.date >= data_inicio) & (df_dnd.index.date < data_final + timedelta(days=1))]
+    df_vendas_cortado['tipo'] = df_vendas_cortado['tipo'].str.strip()
+    # Exibir o DataFrame filtrado
+    #st.dataframe(df_vendas_cortado)
         
-        col3.metric('Valor on line',
-        valor_vendas3,           
-        (dif_metrica3))
 
-        
-        #st.write("### Vendas Presenciais")
-        #st.write(f"### Vendas Presenciais: R${total_vendas_PR:,.2f}")
-        st.dataframe(dados_PR)
+    dados_PR = df_vendas_cortado[df_vendas_cortado['tipo'] == 'PR'][['vendedor', 'total_receb', 'quantidade','tipo','desconto']].round(2).round(2)
+    dados_ON = df_vendas_cortado[df_vendas_cortado['tipo'] == 'ON'][['vendedor', 'total_receb', 'quantidade','tipo','desconto']].round(2)
+    
+    resultado_PR = dados_PR.groupby('vendedor').agg({
+        'total_receb': 'sum',
+        'quantidade': 'sum',
+        'desconto': 'sum'
+        }).reset_index()
+    
+    
+    
+    resultado_PR['tkm'] = resultado_PR['total_receb'] /resultado_PR['quantidade']
+    # Ordenar o DataFrame resultante para 'ON' por 'total_receb' em ordem decrescente
+    resultado_PR = resultado_PR.sort_values(by='total_receb', ascending=False)
+
+    
+    resultado_ON = dados_ON.groupby('vendedor').agg({
+        'total_receb': 'sum',
+        'quantidade': 'sum',
+        'desconto': 'sum'
+        }).reset_index()
+    
+    
+    
+    resultado_ON['tkm'] = resultado_ON['total_receb'] /resultado_ON['quantidade']
+    # Ordenar o DataFrame resultante para 'ON' por 'total_receb' em ordem decrescente
+    resultado_ON = resultado_ON.sort_values(by='total_receb', ascending=False)
+    
+    #st.dataframe(resultado_PR)
+    total_vendas_DIA = df_vendas_cortado['total_receb'].sum()
+    
+    total_vendas_ON = resultado_ON['total_receb'].sum()
+    total_vendas_PR = resultado_PR['total_receb'].sum()
+    countv = df_vendas_cortado['total_receb'].count()
+
+        # Adicionando KPIs
+col1, col2, col3 = st.columns(3)
+valor_vendas = f"R$ {total_vendas_DIA: ,.2f}"
+col1.metric('Valor de vendas no período', valor_vendas)
+
+valor_vendas2 = f"R$ {total_vendas_PR : ,.2f}"
+dif_metrica2 = f"  {total_vendas_PR / total_vendas_DIA * 100: .2f} %"
+col2.metric('Valor presencial', valor_vendas2, dif_metrica2)
+
+valor_vendas3 = f"R$ {total_vendas_ON : ,.2f}"
+dif_metrica3 = f"{total_vendas_ON / total_vendas_DIA * 100: .2f} %"
+col3.metric('Valor online', valor_vendas3, dif_metrica3)
+
+conutv  = f" {countv  : ,.0f}"
+dif_metrica3 = f"{countv  :.2f} %"
+col1.metric('pedidos', conutv)
+
+
+
+#nciais: R${total_vendas_PR:,.2f}")
+st.dataframe(resultado_PR)
+st.dataframe(resultado_ON)
+
 
         #st.write(f"### Vendas Online: R${total_vendas_ON:,.2f}")
-        st.dataframe(dados_ON)
+#st.dataframe(dados_ON)
+
+# Filtrar o DataFrame para trazer apenas as linhas onde o cliente é 'AO CONSUMIDOR'
+filtered_df = df_dnd[df_dnd['cliente'] == 'AO CONSUMIDOR']
+#st.dataframe(filtered_df )
+# Agrupar por vendedor e somar o total vendido
+#grouped_sales = filtered_df.groupby('vendedor')['vendido'].sum().reset_index()
+grouped_sales = filtered_df .groupby('vendedor').agg({
+        'total_receb': 'sum',
+        'quantidade': 'sum',
+        'desconto': 'sum'
+        }).reset_index()
+# Ordenar os resultados pelo total vendido
+grouped_sales = grouped_sales.sort_values(by='total_receb', ascending=False)
+
 
 
         #st.write(f"### Total de Vendas do Dia: R${total_vendas_DIA:,.2f}")

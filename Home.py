@@ -19,7 +19,7 @@ def obter_diretorios():
 diretorio_atual, pasta_datasets = obter_diretorios()
 
 # Carregar a base de dados a partir de um arquivo Excel
-df_dnd = pd.read_excel(pasta_datasets / 'BaseVendasMatriz-maio-24.xlsx')
+#df_dnd = pd.read_excel(pasta_datasets / 'BaseVendasMatriz-maio-24.xlsx')
 
 # Exibir o DataFrame no Streamlit
 #st.dataframe(df_dnd)

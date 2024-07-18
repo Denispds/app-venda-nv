@@ -6,26 +6,15 @@ from datetime import datetime
 from pathlib import Path
 
 # Configuração da página
-#st.set_page_config(layout="wide", page_title="Dashboard de Vendas")
+# Função para obter diretórios (ajustada para o mesmo diretório)
 def obter_diretorios():
-    # Obter o diretório do script atual
-    diretorio_atual = Path(__file__).resolve()
-    # Obter o diretório da pasta 'datasets'
-    pasta_datasets = Path(__file__).parents[1] / 'datasets'
-    
-    return diretorio_atual, pasta_datasets
+    diretorio_atual = Path(__file__).resolve().parent
+    return diretorio_atual
 
-# Usar a função para obter os diretórios
-diretorio_atual, pasta_datasets = obter_diretorios()
+diretorio_atual = obter_diretorios()
 
 # Carregar a base de dados a partir de um arquivo Excel
-#df_dnd = pd.read_excel(pasta_datasets / 'BaseVendasMatriz-maio-24.xlsx')
-
-# Exibir o DataFrame no Streamlit
-#st.dataframe(df_dnd)
-
-# Carregar a base de dados a partir de um arquivo Excel
-df_dnd = pd.read_excel('BaseVendasMatriz-maio-24.xlsx')
+df_dnd = pd.read_excel(diretorio_atual / 'BaseVendasMatriz-maio-24.xlsx')
 df2dnd = df_dnd.copy()
 
 # Funções de processamento

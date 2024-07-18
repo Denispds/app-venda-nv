@@ -25,7 +25,7 @@ df_dnd = pd.read_excel(pasta_datasets / 'BaseVendasMatriz-maio-24.xlsx')
 #st.dataframe(df_dnd)
 
 # Carregar a base de dados a partir de um arquivo Excel
-#df_dnd = pd.read_excel('BaseVendasMatriz-maio-24.xlsx')
+df_dnd = pd.read_excel('BaseVendasMatriz-maio-24.xlsx')
 df2dnd = df_dnd.copy()
 
 # Funções de processamento
